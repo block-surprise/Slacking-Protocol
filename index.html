@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>サボり・プロトコル | System v3.0</title>
+    <title>サボり・プロトコル v3.0</title>
     <style>
         :root {
             --primary: #00f2fe;
@@ -14,18 +14,19 @@
 
         body {
             margin: 0; background: var(--bg); color: white;
-            font-family: 'Consolas', sans-serif;
+            font-family: 'Consolas', 'Monaco', sans-serif;
             display: flex; flex-direction: column; align-items: center; min-height: 100vh;
             overflow-y: auto; padding: 20px;
         }
 
+        /* 背景演出 */
         .bg-grid {
             position: fixed; width: 200%; height: 200%;
             background-image: linear-gradient(rgba(0, 242, 254, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 242, 254, 0.03) 1px, transparent 1px);
             background-size: 40px 40px; transform: perspective(500px) rotateX(60deg);
             z-index: -1; animation: moveGrid 8s linear infinite; top: 0;
         }
-        @keyframes moveGrid { from { transform: perspective(500px) rotateX(60deg) translateY(0); } to { transform: perspective(500px) rotateX(60deg) translateY(40px); } }
+        @keyframes moveGrid { from { transform: translateY(0); } to { transform: translateY(40px); } }
 
         .container {
             width: 100%; max-width: 450px; padding: 30px;
@@ -34,42 +35,38 @@
             text-align: center; box-shadow: 0 0 50px rgba(0,0,0,1);
         }
 
-        /* モード選択ボタン */
-        .mode-selector {
-            display: flex; justify-content: space-around; margin-bottom: 20px; gap: 5px;
-        }
+        /* モード選択 */
+        .mode-selector { display: flex; justify-content: space-between; margin-bottom: 20px; gap: 10px; }
         .mode-btn {
-            flex: 1; padding: 8px; font-size: 0.7rem; border: 1px solid var(--primary);
+            flex: 1; padding: 10px; font-size: 0.8rem; border: 1px solid var(--primary);
             background: transparent; color: var(--primary); cursor: pointer; transition: 0.3s;
         }
         .mode-btn.active { background: var(--primary); color: var(--bg); font-weight: bold; }
 
-        h1 { font-size: 1.4rem; letter-spacing: 5px; text-shadow: 0 0 10px var(--primary); margin: 10px 0; }
+        h1 { font-size: 1.5rem; letter-spacing: 4px; text-shadow: 0 0 10px var(--primary); margin: 0 0 20px 0; }
         
         textarea {
             width: 100%; height: 100px; background: rgba(0, 0, 0, 0.7);
             border: 1px solid rgba(0, 242, 254, 0.3); color: var(--primary);
-            padding: 15px; box-sizing: border-box; margin-bottom: 15px; outline: none; resize: none;
+            padding: 15px; box-sizing: border-box; margin-bottom: 20px; outline: none; resize: none;
         }
 
         button#main-btn {
-            width: 100%; padding: 15px; background: transparent;
+            width: 100%; padding: 18px; background: transparent;
             border: 1px solid var(--primary); color: var(--primary);
             font-weight: bold; cursor: pointer; transition: 0.2s;
         }
         button#main-btn:disabled { opacity: 0.5; cursor: wait; }
 
-        /* リザルト */
-        #resultArea { display: none; margin-top: 25px; border-top: 1px dashed rgba(0, 242, 254, 0.3); padding-top: 20px; }
-        .score-display { font-size: 4rem; font-weight: 900; color: white; text-shadow: 0 0 20px var(--primary); }
-        .comment { font-size: 0.9rem; color: #889; background: rgba(255,255,255,0.03); padding: 15px; border-left: 3px solid var(--primary); text-align: left; margin-top: 10px;}
+        /* 結果表示 */
+        #resultArea { display: none; margin-top: 30px; border-top: 1px dashed rgba(0, 242, 254, 0.3); padding-top: 20px; }
+        .score-display { font-size: 4.5rem; font-weight: 900; color: white; text-shadow: 0 0 20px var(--primary); }
+        .comment { font-size: 0.9rem; color: #889; background: rgba(255,255,255,0.03); padding: 15px; border-left: 3px solid var(--primary); text-align: left; margin-top: 15px;}
 
-        /* ログエリア */
-        .log-container {
-            width: 100%; max-width: 450px; margin-top: 30px;
-            text-align: left; font-size: 0.8rem; color: #667;
-        }
-        .log-item { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 10px 0; }
+        /* ログ機能 */
+        .log-container { width: 100%; max-width: 450px; margin-top: 30px; text-align: left; }
+        .log-header { border-bottom: 1px solid var(--primary); padding-bottom: 5px; color: var(--primary); font-size: 0.8rem; letter-spacing: 2px; }
+        .log-item { border-bottom: 1px solid rgba(255,255,255,0.05); padding: 10px 0; font-size: 0.8rem; color: #667; }
         .log-score { font-weight: bold; color: var(--primary); margin-right: 10px; }
 
         #flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; opacity: 0; }
@@ -82,26 +79,24 @@
 
 <div class="container">
     <div class="mode-selector">
-        <button class="mode-btn active" onclick="setMode('cool', this)">冷徹</button>
-        <button class="mode-btn" onclick="setMode('kind', this)">慈愛</button>
-        <button class="mode-btn" onclick="setMode('army', this)">軍曹</button>
+        <button id="mode-cool" class="mode-btn active" onclick="setMode('cool')">冷徹</button>
+        <button id="mode-kind" class="mode-btn" onclick="setMode('kind')">慈愛</button>
+        <button id="mode-army" class="mode-btn" onclick="setMode('army')">軍曹</button>
     </div>
 
     <h1>サボり・プロトコル</h1>
-    <div style="font-size: 0.6rem; color: var(--primary); margin-bottom: 15px;">ANALYSIS ENGINE v3.0 ONLINE</div>
-
     <textarea id="reason" placeholder="未達成事由を記述せよ..."></textarea>
     <button id="main-btn" onclick="startBattle()">解析プロセス開始</button>
 
     <div id="resultArea">
         <div id="score" class="score-display">0%</div>
-        <div id="label" style="font-weight: bold; letter-spacing: 2px;"></div>
+        <div id="label" style="font-weight: bold; letter-spacing: 2px; margin-bottom: 10px;"></div>
         <div id="comment" class="comment"></div>
     </div>
 </div>
 
 <div class="log-container">
-    <div style="border-bottom: 1px solid var(--primary); padding-bottom: 5px; margin-bottom: 10px; color: var(--primary);">SYSTEM LOG</div>
+    <div class="log-header">SYSTEM LOG HISTORY</div>
     <div id="log-list"></div>
 </div>
 
@@ -110,10 +105,10 @@
     let currentMode = 'cool';
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    function setMode(mode, btn) {
+    function setMode(mode) {
         currentMode = mode;
         document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        document.getElementById(`mode-${mode}`).classList.add('active');
         playBeep(440, 0.05);
     }
 
@@ -133,11 +128,11 @@
 
         const btn = document.getElementById('main-btn');
         btn.disabled = true;
+        btn.innerText = "ANALYZING...";
         document.getElementById('resultArea').style.display = 'block';
-        document.getElementById('score').innerText = "ANALYZING...";
+        document.getElementById('score').innerText = "---%";
 
         try {
-            // モード情報を添えてWorkersへ送る（プロンプトをWorkers側で分岐させる）
             const response = await fetch(WORKER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -150,6 +145,7 @@
         } catch (e) {
             document.getElementById('score').innerText = "ERR";
             btn.disabled = false;
+            btn.innerText = "RETRY";
         }
     }
 
@@ -160,33 +156,37 @@
                 clearInterval(timer);
                 showResult(target, comment);
             } else {
-                current++;
+                current += Math.ceil((target - current) / 10 + 1);
+                if (current > target) current = target;
                 document.getElementById('score').innerText = current + "%";
-                if(current % 5 === 0) playBeep(200 + current*5, 0.02, 0.02);
+                if(current % 3 === 0) playBeep(200 + current*5, 0.02, 0.03);
             }
         }, 30);
     }
 
-    function showResult(score, comment) {
+    function showResult(score, commentText) {
         const label = document.getElementById('label');
         const flash = document.getElementById('flash');
         
-        if (score >= 80) { label.innerText = "ACCEPTED"; label.style.color = var(--primary); flash.style.background = "white"; }
+        if (score >= 80) { label.innerText = "ACCEPTED"; label.style.color = "#00f2fe"; flash.style.background = "white"; }
         else if (score >= 40) { label.innerText = "MARGINAL"; label.style.color = "#ffcc00"; flash.style.background = "rgba(255,200,0,0.2)"; }
         else { label.innerText = "REJECTED"; label.style.color = "#ff3b30"; flash.style.background = "rgba(255,0,0,0.2)"; }
 
-        document.getElementById('comment').innerText = comment;
-        flash.animate([{opacity: 0.5}, {opacity: 0}], 400);
+        document.getElementById('comment').innerText = commentText;
+        flash.animate([{opacity: 0.6}, {opacity: 0}], 500);
         playBeep(880, 0.1, 0.1);
-        speak(comment);
-        document.getElementById('main-btn').disabled = false;
+        speak(commentText);
+        
+        const btn = document.getElementById('main-btn');
+        btn.disabled = false;
+        btn.innerText = "NEXT ANALYSIS";
     }
 
     function saveLog(score, text) {
         const list = document.getElementById('log-list');
         const item = document.createElement('div');
         item.className = 'log-item';
-        item.innerHTML = `<span class="log-score">${score}%</span> ${text.substring(0,20)}...`;
+        item.innerHTML = `<span class="log-score">${score}%</span> ${text}`;
         list.prepend(item);
     }
 
@@ -194,8 +194,7 @@
         window.speechSynthesis.cancel();
         const uttr = new SpeechSynthesisUtterance(text);
         uttr.lang = 'ja-JP';
-        // 性格によって声色を変える
-        if (currentMode === 'kind') { uttr.rate = 0.9; uttr.pitch = 1.2; }
+        if (currentMode === 'kind') { uttr.rate = 1.0; uttr.pitch = 1.2; }
         else if (currentMode === 'army') { uttr.rate = 1.3; uttr.pitch = 0.5; }
         else { uttr.rate = 1.0; uttr.pitch = 0.7; }
         window.speechSynthesis.speak(uttr);
