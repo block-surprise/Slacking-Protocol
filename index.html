@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>サボり・プロトコル | AI解析システム</title>
+    <title>サボり・プロトコル | v2.0</title>
     <style>
         :root {
             --primary: #00f2fe;
             --secondary: #4facfe;
             --danger: #ff3b30;
             --warning: #ffcc00;
-            --bg: #0a0a1a;
+            --bg: #050510;
         }
 
         body {
             margin: 0;
             background: var(--bg);
             color: white;
-            font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
+            font-family: 'Consolas', 'Monaco', 'Courier New', 'Hiragino Sans', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -25,135 +25,137 @@
             overflow: hidden;
         }
 
-        /* 背景演出 */
+        /* サイバーパンクな背景演出 */
         .bg-grid {
             position: absolute;
             width: 200%;
             height: 200%;
             background-image: 
-                linear-gradient(rgba(0, 242, 254, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 242, 254, 0.05) 1px, transparent 1px);
-            background-size: 50px 50px;
+                linear-gradient(rgba(0, 242, 254, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 242, 254, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
             transform: perspective(500px) rotateX(60deg);
             z-index: -1;
-            animation: moveGrid 10s linear infinite;
+            animation: moveGrid 8s linear infinite;
         }
 
         @keyframes moveGrid {
             from { transform: perspective(500px) rotateX(60deg) translateY(0); }
-            to { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+            to { transform: perspective(500px) rotateX(60deg) translateY(40px); }
         }
 
         .container {
             width: 90%;
-            max-width: 400px;
-            padding: 30px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(0, 242, 254, 0.3);
-            border-radius: 20px;
+            max-width: 420px;
+            padding: 40px;
+            background: rgba(10, 10, 30, 0.8);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 242, 254, 0.2);
+            border-radius: 5px;
             text-align: center;
-            box-shadow: 0 0 30px rgba(0, 242, 254, 0.1);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 1);
+            position: relative;
         }
 
+        /* 装飾用コーナー */
+        .container::before { content: ""; position: absolute; top: -2px; left: -2px; width: 20px; height: 20px; border-top: 3px solid var(--primary); border-left: 3px solid var(--primary); }
+        .container::after { content: ""; position: absolute; bottom: -2px; right: -2px; width: 20px; height: 20px; border-bottom: 3px solid var(--primary); border-right: 3px solid var(--primary); }
+
         .protocol-header {
-            margin-bottom: 25px;
-            border-bottom: 1px solid rgba(0, 242, 254, 0.2);
-            padding-bottom: 10px;
+            margin-bottom: 30px;
+            text-align: left;
         }
 
         .system-status {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: var(--primary);
+            opacity: 0.7;
             letter-spacing: 2px;
-            text-transform: uppercase;
         }
 
         h1 {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             margin: 5px 0;
-            letter-spacing: 3px;
-            text-shadow: 0 0 10px var(--primary);
+            letter-spacing: 5px;
+            text-shadow: 0 0 15px var(--primary);
+            font-weight: bold;
         }
 
         textarea {
             width: 100%;
-            height: 100px;
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(0, 242, 254, 0.5);
-            border-radius: 10px;
-            color: white;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            color: var(--primary);
             padding: 15px;
             box-sizing: border-box;
-            font-size: 1rem;
+            font-size: 0.95rem;
             margin-bottom: 20px;
             outline: none;
-            transition: 0.3s;
-        }
-
-        textarea:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+            resize: none;
         }
 
         button {
             width: 100%;
-            padding: 15px;
+            padding: 18px;
             background: transparent;
             border: 1px solid var(--primary);
             color: var(--primary);
             font-weight: bold;
-            font-size: 1rem;
+            letter-spacing: 2px;
             cursor: pointer;
-            border-radius: 5px;
-            position: relative;
-            overflow: hidden;
-            transition: 0.3s;
+            transition: 0.2s;
         }
 
-        button:hover {
-            background: var(--primary);
-            color: var(--bg);
-            box-shadow: 0 0 20px var(--primary);
+        button:hover:not(:disabled) {
+            background: rgba(0, 242, 254, 0.1);
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
         }
 
-        /* リザルトエリア */
+        button:disabled {
+            border-color: #444;
+            color: #444;
+            cursor: wait;
+        }
+
         #resultArea {
             display: none;
-            margin-top: 30px;
+            margin-top: 35px;
+            border-top: 1px dashed rgba(0, 242, 254, 0.3);
+            padding-top: 25px;
         }
 
         .score-display {
-            font-size: 4rem;
+            font-size: 5rem;
             font-weight: 900;
-            font-style: italic;
             margin: 10px 0;
-            text-shadow: 0 0 20px var(--primary);
+            color: white;
+            text-shadow: 0 0 30px var(--primary);
         }
 
         .label {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             font-weight: bold;
             margin-bottom: 15px;
             opacity: 0;
+            letter-spacing: 3px;
         }
 
         .comment {
-            font-size: 0.9rem;
-            color: #ccc;
-            line-height: 1.6;
-            background: rgba(0,0,0,0.3);
-            padding: 10px;
-            border-radius: 5px;
+            font-size: 0.85rem;
+            color: #889;
+            line-height: 1.8;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-left: 3px solid var(--primary);
+            text-align: left;
         }
 
-        .show {
-            animation: popIn 0.5s forwards;
-        }
+        .show { animation: popIn 0.4s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
         @keyframes popIn {
-            0% { transform: scale(0.5); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
         }
 
         #flash {
@@ -170,13 +172,13 @@
 
 <div class="container">
     <div class="protocol-header">
-        <div class="system-status">System: Standby / User: Human</div>
+        <div class="system-status">DECRYPTING HUMAN BEHAVIOR...</div>
         <h1>サボり・プロトコル</h1>
     </div>
 
-    <textarea id="reason" placeholder="未達成事由（言い訳）を入力せよ..."></textarea>
+    <textarea id="reason" placeholder="未達成事由を記述せよ..."></textarea>
     
-    <button id="btn" onclick="startBattle()">解析プロトコル実行</button>
+    <button id="btn" onclick="startBattle()">解析プロセス開始</button>
 
     <div id="resultArea">
         <div id="score" class="score-display">0%</div>
@@ -187,24 +189,42 @@
 
 <script>
     const WORKER_URL = 'https://iiwake.proluce.workers.dev';
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // 電子音エフェクト
+    function playBeep(freq, duration, vol = 0.1, type = 'sine') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
 
     async function startBattle() {
         const reason = document.getElementById('reason').value;
-        if (!reason) return alert("言い訳が入力されていません。");
+        if (!reason) return;
 
         const btn = document.getElementById('btn');
         const resultArea = document.getElementById('resultArea');
-        const scoreEl = document.getElementById('score');
-        const labelEl = document.getElementById('label');
-        const commentEl = document.getElementById('comment');
-
-        // UIリセット
+        
+        // UI初期化
         btn.disabled = true;
         btn.innerText = "ANALYZING...";
         resultArea.style.display = 'block';
-        labelEl.classList.remove('show');
-        scoreEl.innerText = "---%";
-        commentEl.innerText = "AIによる論理整合性の解析中...";
+        document.getElementById('label').classList.remove('show');
+        document.getElementById('score').innerText = "---%";
+        document.getElementById('comment').innerText = "論理回路接続中...";
+
+        // 解析中の「ピコピコ」音
+        const soundLoop = setInterval(() => {
+            if (btn.disabled) playBeep(600 + Math.random() * 200, 0.05, 0.05);
+            else clearInterval(soundLoop);
+        }, 200);
 
         try {
             const response = await fetch(WORKER_URL, {
@@ -212,18 +232,12 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ reason })
             });
-
             const data = await response.json();
-            
-            // カウントアップ演出
             animateScore(data.score, data.comment);
-
         } catch (error) {
-            console.error(error);
-            scoreEl.innerText = "ERR";
-            commentEl.innerText = "通信エラー。プロトコルが遮断されました。";
+            document.getElementById('score').innerText = "ERR";
             btn.disabled = false;
-            btn.innerText = "再試行";
+            btn.innerText = "RETRY";
         }
     }
 
@@ -235,10 +249,12 @@
                 clearInterval(timer);
                 showFinalResult(target, comment);
             } else {
-                current++;
+                current += Math.ceil((target - current) / 10 + 1);
+                if (current > target) current = target;
                 scoreEl.innerText = current + "%";
+                playBeep(200 + current * 5, 0.03, 0.03); // 数値上昇に合わせて音程も上げる
             }
-        }, 20);
+        }, 40);
     }
 
     function showFinalResult(score, commentText) {
@@ -247,40 +263,46 @@
         const flash = document.getElementById('flash');
         const btn = document.getElementById('btn');
 
-        // 判定
+        // システム確定音
+        playBeep(880, 0.1, 0.1, 'square');
+        setTimeout(() => playBeep(1100, 0.1, 0.1, 'square'), 50);
+
         if (score >= 80) {
-            labelEl.innerText = "【 承認 】正当な休息";
+            labelEl.innerText = "PROTOCOL ACCEPTED";
             labelEl.style.color = "var(--primary)";
             flash.style.background = "white";
         } else if (score >= 40) {
-            labelEl.innerText = "【 考慮 】限定的承認";
+            labelEl.innerText = "MARGINAL CASE";
             labelEl.style.color = "var(--warning)";
             flash.style.background = "rgba(255, 204, 0, 0.2)";
         } else {
-            labelEl.innerText = "【 却下 】自己規律違反";
+            labelEl.innerText = "LOGIC FAILURE";
             labelEl.style.color = "var(--danger)";
             flash.style.background = "rgba(255, 59, 48, 0.2)";
         }
 
-        // 演出
         labelEl.classList.add('show');
         commentEl.innerText = commentText;
+        flash.animate([{ opacity: 0.8 }, { opacity: 0 }], { duration: 400 });
         
-        flash.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 500 });
-        
-        // 音声読み上げ
         speak(commentText);
 
         btn.disabled = false;
-        btn.innerText = "別の言い訳を送信";
+        btn.innerText = "NEXT ANALYSIS";
     }
 
     function speak(text) {
-        window.speechSynthesis.cancel(); // 読み上げ中なら停止
+        window.speechSynthesis.cancel();
         const uttr = new SpeechSynthesisUtterance(text);
+        
+        // ボイスの選定
+        const voices = window.speechSynthesis.getVoices();
+        const systemVoice = voices.find(v => v.lang.includes('ja') && v.name.includes('Google')) || voices.find(v => v.lang.includes('ja'));
+        if (systemVoice) uttr.voice = systemVoice;
+
         uttr.lang = 'ja-JP';
-        uttr.rate = 1.1;
-        uttr.pitch = 0.8; // 少し低くしてシステムっぽく
+        uttr.rate = 0.95; // 少しだけゆっくりにして重厚感を出す
+        uttr.pitch = 0.6; // 低めにして「ちゃんとした機械」感を出す
         window.speechSynthesis.speak(uttr);
     }
 </script>
