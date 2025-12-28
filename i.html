@@ -2,44 +2,43 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>サボり・プロトコル | NATIVE AUDIO v4.0</title>
+    <title>サボり・プロトコル | NATIVE AUDIO DIALOG</title>
     <style>
-        :root { --primary: #00f2fe; --danger: #ff3b30; --bg: #050510; }
-        body { margin: 0; background: var(--bg); color: white; font-family: 'Courier New', sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; }
-        .container { width: 100%; max-width: 450px; padding: 30px; background: rgba(10, 10, 30, 0.9); backdrop-filter: blur(20px); border: 2px solid var(--primary); border-radius: 5px; text-align: center; }
-        .mode-selector { display: flex; gap: 10px; margin-bottom: 20px; }
-        .mode-btn { flex: 1; padding: 10px; border: 1px solid var(--primary); background: transparent; color: var(--primary); cursor: pointer; font-size: 0.8rem; }
-        .mode-btn.active { background: var(--primary); color: var(--bg); font-weight: bold; }
-        textarea { width: 100%; height: 100px; background: #000; border: 1px solid var(--primary); color: var(--primary); padding: 15px; box-sizing: border-box; margin-bottom: 20px; outline: none; }
-        button#main-btn { width: 100%; padding: 18px; background: transparent; border: 2px solid var(--primary); color: var(--primary); font-weight: bold; cursor: pointer; overflow: hidden; position: relative; }
-        button#main-btn:disabled { opacity: 0.3; }
-        .score-display { font-size: 5rem; font-weight: 900; text-shadow: 0 0 20px var(--primary); margin: 20px 0; }
-        .comment { font-size: 0.9rem; padding: 15px; background: rgba(255,255,255,0.05); border-left: 4px solid var(--primary); text-align: left; }
+        :root { --primary: #00f2fe; --bg: #02020a; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { width: 420px; padding: 40px; border: 1px solid var(--primary); background: rgba(0, 242, 254, 0.02); box-shadow: 0 0 40px rgba(0,242,254,0.1); border-radius: 2px; text-align: center; }
+        textarea { width: 100%; height: 120px; background: #000; border: 1px solid var(--primary); color: var(--primary); padding: 15px; box-sizing: border-box; font-size: 1rem; margin: 20px 0; outline: none; }
+        .mode-selector { display: flex; gap: 10px; margin-bottom: 10px; }
+        .mode-btn { flex: 1; padding: 10px; border: 1px solid var(--primary); background: none; color: var(--primary); cursor: pointer; opacity: 0.5; }
+        .mode-btn.active { opacity: 1; background: rgba(0,242,254,0.1); box-shadow: inset 0 0 10px var(--primary); }
+        #analyze-btn { width: 100%; padding: 20px; background: var(--primary); color: #000; font-weight: bold; border: none; cursor: pointer; letter-spacing: 5px; }
+        #analyze-btn:disabled { background: #333; cursor: not-allowed; }
+        .visualizer { height: 60px; display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 25px; }
+        .bar { width: 3px; height: 5px; background: var(--primary); box-shadow: 0 0 5px var(--primary); }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="mode-selector">
-        <button id="mode-cool" class="mode-btn active" onclick="setMode('cool')">冷徹解析</button>
-        <button id="mode-kind" class="mode-btn" onclick="setMode('kind')">慈愛聖母</button>
-        <button id="mode-army" class="mode-btn" onclick="setMode('army')">鬼軍曹</button>
+        <button id="mode-cool" class="mode-btn active" onclick="setMode('cool')">ANALYZER</button>
+        <button id="mode-kind" class="mode-btn" onclick="setMode('kind')">MOTHER</button>
+        <button id="mode-army" class="mode-btn" onclick="setMode('army')">SERGEANT</button>
     </div>
-
-    <h1>PROTOCOL: SABORI</h1>
-    <textarea id="reason" placeholder="未達成事由（言い訳）を入力..."></textarea>
-    <button id="main-btn" onclick="startBattle()">解析プロトコル実行</button>
-
-    <div id="resultArea" style="display:none;">
-        <div id="score" class="score-display">0%</div>
-        <div id="comment" class="comment"></div>
+    <h1 style="letter-spacing: 10px; font-size: 1.2rem;">SABORI PROTOCOL</h1>
+    <textarea id="reason" placeholder="REPORT YOUR STATUS..."></textarea>
+    <button id="analyze-btn" onclick="executeNativeDialog()">INITIATE DIALOG</button>
+    <div id="status" style="margin-top:20px; font-size: 0.7rem; color: var(--primary); font-family: monospace;">SYSTEM READY</div>
+    <div class="visualizer" id="wave">
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
     </div>
 </div>
 
 <script>
-    const WORKER_URL = 'https://iiwake.proluce.workers.dev';
+    const WORKER_URL = 'https://sabori.proluce.workers.dev';
     let currentMode = 'cool';
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     function setMode(mode) {
         currentMode = mode;
@@ -47,60 +46,60 @@
         document.getElementById(`mode-${mode}`).classList.add('active');
     }
 
-    async function startBattle() {
+    async function executeNativeDialog() {
         const reason = document.getElementById('reason').value;
-        if (!reason) return;
-
-        const btn = document.getElementById('main-btn');
+        const btn = document.getElementById('analyze-btn');
+        const status = document.getElementById('status');
+        
         btn.disabled = true;
-        btn.innerText = "CONNECTING AI...";
-        document.getElementById('resultArea').style.display = 'block';
+        status.innerText = "ESTABLISHING NATIVE AUDIO DIALOG...";
 
         try {
             const response = await fetch(WORKER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ reason: reason, mode: currentMode })
+                body: JSON.stringify({ reason, mode: currentMode })
             });
             const data = await response.json();
+
+            // Gemini 2.5からの音声データを抽出 (出力形式がBase64のaudioデータの場合)
+            // candidates[0].content.partsの中からmimeType: audio/xxxを探す
+            const audioPart = data.candidates[0].content.parts.find(p => p.inlineData);
             
-            animateScore(data.score, data.comment);
+            if (audioPart) {
+                status.innerText = "DIALOG RECEIVED. DECODING...";
+                playNativeAudio(audioPart.inlineData.data);
+            } else {
+                status.innerText = "NO AUDIO DATA. FALLBACK TO TEXT...";
+                // フォールバック処理
+            }
         } catch (e) {
-            alert("通信エラー。システムを再起動してください。");
+            status.innerText = "FATAL ERROR IN PROTOCOL";
             btn.disabled = false;
         }
     }
 
-    function animateScore(target, commentText) {
-        let current = 0;
-        const timer = setInterval(() => {
-            if (current >= target) {
-                clearInterval(timer);
-                document.getElementById('comment').innerText = commentText;
-                speak(commentText);
-                document.getElementById('main-btn').disabled = false;
-                document.getElementById('main-btn').innerText = "解析プロトコル実行";
-            } else {
-                current += 2;
-                if(current > target) current = target;
-                document.getElementById('score').innerText = current + "%";
-            }
-        }, 30);
-    }
+    async function playNativeAudio(base64Data) {
+        const arrayBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0)).buffer;
+        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+        const source = audioCtx.createBufferSource();
+        source.buffer = audioBuffer;
 
-    function speak(text) {
-        window.speechSynthesis.cancel();
-        const uttr = new SpeechSynthesisUtterance(text);
-        uttr.lang = 'ja-JP';
-        
-        // モードごとに声のトーンを極端に変える
-        if (currentMode === 'kind') { uttr.pitch = 1.4; uttr.rate = 0.8; }
-        else if (currentMode === 'army') { uttr.pitch = 0.5; uttr.rate = 1.5; }
-        else { uttr.pitch = 0.7; uttr.rate = 1.0; }
-        
-        window.speechSynthesis.speak(uttr);
+        // ビジュアライザーアニメーション
+        const bars = document.querySelectorAll('.bar');
+        const interval = setInterval(() => {
+            bars.forEach(b => b.style.height = Math.random() * 50 + 'px');
+        }, 80);
+
+        source.connect(audioCtx.destination);
+        source.onended = () => {
+            clearInterval(interval);
+            bars.forEach(b => b.style.height = '5px');
+            document.getElementById('analyze-btn').disabled = false;
+            document.getElementById('status').innerText = "SYSTEM READY";
+        };
+        source.start();
     }
 </script>
-
 </body>
 </html>
